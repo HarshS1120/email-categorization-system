@@ -13,6 +13,79 @@ import pickle
 import os
 from datetime import datetime
 
+# Add this at the top of main.py, right after imports
+import os
+
+def ensure_dataset_exists():
+    """Create dataset if it doesn't exist"""
+    if not os.path.exists('enron_dataset.csv'):
+        print("Dataset not found. Creating dataset...")
+        import pandas as pd
+        import random
+        
+        # Email templates for different categories
+        work_emails = [
+            "Project deadline extended to Friday. Please update your tasks accordingly.",
+            "Team meeting at 3 PM in Conference Room A to discuss Q4 goals.",
+            "Can you review the attached proposal and share feedback by EOD?",
+            "Budget approval received from finance for the new initiative.",
+            "Server maintenance scheduled for Saturday 2 AM - 4 AM.",
+            "Quarterly report needs to be submitted by Monday morning.",
+        ]
+        
+        personal_emails = [
+            "Hey! Want to grab coffee later today? Haven't seen you in ages!",
+            "Don't forget about dinner at my place tomorrow at 7 PM.",
+            "Happy Birthday! Hope you have an amazing day! 🎂",
+            "Movie night on Friday? New superhero film is out!",
+            "Working from home tomorrow, let's catch up over video call.",
+            "Gym session at 6 PM? Need a workout buddy!",
+        ]
+        
+        spam_emails = [
+            "CONGRATULATIONS! You've won $1,000,000. Click here to claim now!",
+            "URGENT: Your bank account has been compromised. Verify now at http://fake-link.com",
+            "FREE VIAGRA and Cialis! 80% off today only!",
+            "You have inherited $10,000,000 from a distant relative. Send bank details.",
+            "Get rich quick! Work from home and earn $5000/week!",
+            "Your Netflix account is suspended. Update payment here: http://scam-site.net",
+        ]
+        
+        finance_emails = [
+            "Your monthly statement is ready. Balance: $2,450.32",
+            "Credit card payment due on 15th of this month.",
+            "Invoice #INV-2024-001 attached for your records.",
+            "Tax filing reminder: Deadline approaching in 30 days.",
+            "Investment portfolio update for Q4 is now available.",
+        ]
+        
+        emails = []
+        categories = []
+        
+        for i in range(1000):
+            if i < 400:
+                category = "Work"
+                text = random.choice(work_emails)
+            elif i < 650:
+                category = "Personal"
+                text = random.choice(personal_emails)
+            elif i < 850:
+                category = "Spam"
+                text = random.choice(spam_emails)
+            else:
+                category = "Finance"
+                text = random.choice(finance_emails)
+            
+            emails.append(text)
+            categories.append(category)
+        
+        df = pd.DataFrame({'email': emails, 'category': categories})
+        df.to_csv('enron_dataset.csv', index=False)
+        print(f"✅ Created dataset with {len(df)} emails")
+
+# Call this function right after imports, before loading the dataset
+ensure_dataset_exists()
+
 # Download NLTK data (first time only)
 nltk.download('stopwords', quiet=True)
 nltk.download('punkt', quiet=True)
