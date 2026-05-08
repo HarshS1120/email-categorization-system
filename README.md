@@ -18,13 +18,3 @@ Open web browser at localhost:8501
 Enter email text or upload CSV
 
 Get instant category prediction
-
-
-## **Share Your Success!**
-
-Your system is **production-ready**. Now run:
-
-```bash
-streamlit run app.py
-
-Take a screenshot of the web interface and share it! Then we can discuss any improvements or deployment options (like putting it online for free using Streamlit Cloud).
