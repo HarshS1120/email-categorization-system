@@ -1,40 +1,28 @@
-# Dockerfile
 FROM python:3.11-slim
 
-# Set working directory
 WORKDIR /app
 
-# Install system dependencies required for numpy, pandas, scikit-learn
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
     build-essential \
-    python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip and install build tools
-RUN pip install --upgrade pip setuptools wheel
-
-# Copy requirements first (for better caching)
+# Install Python packages
 COPY requirements.txt .
-
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir setuptools==68.2.2 wheel==0.41.2 && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Download NLTK data
-RUN python -c "import nltk; nltk.download('stopwords', quiet=True); nltk.download('punkt', quiet=True)"
+RUN python -c "import nltk; nltk.download('stopwords'); nltk.download('punkt')"
 
-# Copy the rest of the application
+# Copy app code
 COPY . .
 
-# Create models directory if it doesn't exist
-RUN mkdir -p models
-
-# Train the model during build
+# Train model
 RUN python main.py
 
-# Expose the port Render expects
 EXPOSE 10000
-
-# Command to run the Streamlit app
-CMD ["streamlit", "run", "app.py", "--server.port=10000", "--server.address=0.0.0.0", "--server.enableCORS=false", "--server.enableXsrfProtection=false"]
+CMD ["streamlit", "run", "app.py", "--server.port=10000", "--server.address=0.0.0.0"]
