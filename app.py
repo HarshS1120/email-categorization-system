@@ -48,32 +48,76 @@ except Exception as e:
     st.error(f"❌ Could not load models: {e}")
     st.info("Run 'python main.py' first to train and save the model")
 
+# Initialize session state
+if 'history' not in st.session_state:
+    st.session_state.history = []
 # Header
 st.title("📧 Intelligent Email Categorization System")
 st.markdown("---")
 
 # Sidebar
 with st.sidebar:
-    st.header("📊 System Info")
-    st.info("""
-    **Categories:**
-    - 💼 Work
-    - 👤 Personal  
-    - 🚫 Spam
-    - 💰 Finance
-    """)
+    st.header("📊 History & Statistics")
     
-    st.header("📈 Model Performance")
-    st.success("✅ Accuracy: 100%")
-    st.success("✅ Precision: 100%")
-    st.success("✅ Recall: 100%")
+    # Display stats if history exists
+    if len(st.session_state.history) > 0:
+        history_df = pd.DataFrame(st.session_state.history)
+        
+        # Key metrics
+        st.subheader("📈 Session Metrics")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric("Total Classified", len(history_df))
+        with col2:
+            avg_conf = history_df['confidence'].mean()
+            st.metric("Avg Confidence", f"{avg_conf:.1f}%")
+        
+        # Category distribution
+        st.subheader("📊 Category Distribution")
+        cat_counts = history_df['category'].value_counts()
+        
+        # Create a simple bar chart
+        st.bar_chart(cat_counts)
+        
+        # Show percentages
+        st.subheader("📊 Percentage Breakdown")
+        for cat, count in cat_counts.items():
+            percentage = (count / len(history_df)) * 100
+            st.write(f"**{cat}:** {percentage:.1f}% ({count} emails)")
+            st.progress(percentage / 100)
+        
+        # Recent classifications
+        st.subheader("🕒 Recent Classifications")
+        recent = history_df.tail(5)
+        for idx, row in recent.iterrows():
+            # Color code the category
+            if row['category'] == 'Work':
+                cat_color = "💼"
+            elif row['category'] == 'Personal':
+                cat_color = "👤"
+            elif row['category'] == 'Spam':
+                cat_color = "🚫"
+            else:  # Finance
+                cat_color = "💰"
+            
+            st.write(f"{cat_color} **{row['category']}** - {row['confidence']:.1f}%")
+            st.caption(f"📝 {row['email'][:60]}...")
+            st.caption(f"⏰ {row['timestamp'].strftime('%H:%M:%S')}")
+            st.markdown("---")
+        
+        # Clear history button
+        if st.button("🗑️ Clear History", type="secondary", use_container_width=True):
+            st.session_state.history = []
+            st.rerun()
+    else:
+        st.info("📭 No emails classified yet")
+        st.caption("Classify emails in the main panel to see history here")
     
-    st.header("📁 Files")
-    st.caption("Model saved as: best_model.pkl")
-    st.caption("Vectorizer saved as: vectorizer.pkl")
+    st.markdown("---")
+    st.caption("📧 **Categories:** Work | Personal | Spam | Finance")
 
 # Main content - Two tabs
-tab1, tab2, tab3 = st.tabs(["📝 Single Email", "📁 Batch Processing", "📊 History & Stats"])
+tab1, tab2 = st.tabs(["📝 Single Email", "📁 Batch Processing"])
 
 # TAB 1: Single Email Classification
 with tab1:
@@ -271,51 +315,6 @@ with tab2:
                 category_counts = df_result['predicted_category'].value_counts()
 
                 st.bar_chart(category_counts)
-
-# TAB 3: History & Stats
-# TAB 3: History & Stats
-with tab3:
-
-    st.header("Classification History")
-
-    # Check if history exists
-    if 'history' in st.session_state and st.session_state.history:
-
-        history_df = pd.DataFrame(st.session_state.history)
-
-        # Show history table
-        st.dataframe(history_df)
-
-        # Stats
-        st.subheader("📊 Session Statistics")
-
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-            st.metric("Total Classified", len(history_df))
-
-        with col2:
-            unique_cats = history_df['category'].nunique()
-            st.metric("Categories Found", unique_cats)
-
-        with col3:
-            avg_conf = history_df['confidence'].mean()
-            st.metric("Avg Confidence", f"{avg_conf:.1f}%")
-
-        # Category distribution
-        st.subheader("📈 Category Distribution (Current Session)")
-
-        cat_dist = history_df['category'].value_counts()
-
-        st.bar_chart(cat_dist)
-
-        # Clear button
-        if st.button("Clear History"):
-            st.session_state.history = []
-            st.rerun()
-
-    else:
-        st.info("No emails classified yet. Go to 'Single Email' tab to start!")
 
 # Footer
 st.markdown("---")
