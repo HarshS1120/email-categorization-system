@@ -1,25 +1,8 @@
-# .dockerignore
 venv
 __pycache__
 *.pyc
-*.pyo
-*.pyd
-.Python
-*.so
-*.egg
-*.egg-info
-dist
-build
 .git
-.gitignore
 *.md
-!.gitignore
-env
-data/raw
-*.pkl
-!.gitkeep
+!README.md
 .DS_Store
 *.log
-.pytest_cache
-.coverage
-htmlcov
